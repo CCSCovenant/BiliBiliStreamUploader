@@ -20,18 +20,13 @@ def UploadFile(file):
     VP = VideoPart(path+'/'+file,file[5:11],file[5:11]+'录像')
     b = Bilibili()
     b.login(username, password)
-    PartTitle = title + time.strftime("%%m-%d-%H", time.localtime())
+    PartTitle = title + file[5:13]# time.strftime("%m-%d-%H", time.localtime())
     logging.info("login successful, begin uploading"+PartTitle)
     print("login successful, begin uploading"+PartTitle)
     b.upload(VP, PartTitle, tid, tag, desc, dynamtic)
     logging.info("finish uploading "+PartTitle)
     print("finish uploading "+PartTitle)
-#监听直播状态, 0下播 1开播
-def GetLiveStates(id):
-    Room = {'room_id': id}
-    RoomInfo = requests.get("https://api.live.bilibili.com/room/v1/Room/get_info", params=Room)
-    states =  RoomInfo.json()['data']['live_status']
-    return states
+
 
 VideoPartList = []
 #读取相对路径和录像文件名词
@@ -53,19 +48,24 @@ logging.debug("Readed"+"tid: "+str(tid)+' tag: '+str(tag)+' desc: '+desc+' dynam
 
 #暴力死循环
 while(True):
-    if GetLiveStates(room_id) == 0:
         files = os.listdir(path)
+        #遍历录像目录
         for file in files:
+            #寻找指定类型的录像文件
             if file.endswith(type):
-                UploadFile(file)
-                logging.info("delete uploaded file"+file)
-                print("delete uploaded file"+file)
-                os.remove(path+'/'+file)
-    else:
-        print("Streaming, do nothing")
-        time.sleep(10)
-
-    time.sleep(200)
+                #检测录像文件体积编号
+                tmpsizeA = os.path.getsize(path+'/'+file)
+                time.sleep(10)
+                tmpsizeB = os.path.getsize(path+'/'+file)
+                #如果录像体积无变化,开始上传
+                if tmpsizeA == tmpsizeB:
+                    UploadFile(file)
+                    logging.info("delete uploaded file" + file)
+                    print("delete uploaded file" + file)
+                    os.remove(path + '/' + file)
+                else:
+                    print("This video file is writing while streaming, do nothing")
+        time.sleep(200)
 
 
 
@@ -101,5 +101,10 @@ def getVList(UID):
         data = json.load(r)
         vList += data['vlist']
     return vList
-
+#监听直播状态, 0下播 1开播
+def GetLiveStates(id):
+    Room = {'room_id': id}
+    RoomInfo = requests.get("https://api.live.bilibili.com/room/v1/Room/get_info", params=Room)
+    states =  RoomInfo.json()['data']['live_status']
+    return states
 """
