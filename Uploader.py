@@ -18,14 +18,18 @@ def getConfig(section, key):
 #上传
 def UploadFile(file):
     VP = VideoPart(path+'/'+file,file[5:11],file[5:11]+'录像')
-    b = Bilibili()
-    b.login(username, password)
-    PartTitle = title + file[5:13]# time.strftime("%m-%d-%H", time.localtime())
-    logging.info("login successful, begin uploading"+PartTitle)
-    print("login successful, begin uploading"+PartTitle)
-    b.upload(VP, PartTitle, tid, tag, desc, dynamtic)
-    logging.info("finish uploading "+PartTitle)
-    print("finish uploading "+PartTitle)
+    if file == 'file'+type:
+        print('dupe file')
+        #我也不知道为啥会重复上传,打个特判
+    else:
+        b = Bilibili()
+        b.login(username, password)
+        PartTitle = title + file[5:13]# time.strftime("%m-%d-%H", time.localtime())
+        logging.info("login successful, begin uploading"+PartTitle)
+        print("login successful, begin uploading"+PartTitle)
+        b.upload(VP, PartTitle, tid, tag, desc, dynamtic)
+        logging.info("finish uploading "+PartTitle)
+        print("finish uploading "+PartTitle)
 
 
 VideoPartList = []
@@ -63,6 +67,7 @@ while(True):
                     logging.info("delete uploaded file" + file)
                     print("delete uploaded file" + file)
                     os.remove(path + '/' + file)
+                    print(os.listdir(path))
                 else:
                     print("This video file is writing while streaming, do nothing")
         time.sleep(200)
