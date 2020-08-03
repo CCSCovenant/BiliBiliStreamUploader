@@ -5,10 +5,9 @@
 运行之前需要调整config文件
 
 # 依赖
-[comwrg/bilibiliupload](https://github.com/comwrg/bilibiliupload)
-```
-pip3 install bilibiliupload
-```
+
+https://github.com/FortuneDayssss/BilibiliUploader
+
 # 配置:
 
 配置文件:
