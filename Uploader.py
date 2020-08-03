@@ -1,5 +1,9 @@
 import configparser
-from bilibiliupload import *
+import logging
+import time
+
+from bilibiliuploader.bilibiliuploader import BilibiliUploader
+from bilibiliuploader.core import VideoPart
 import os
 import requests
 
@@ -16,23 +20,19 @@ def getConfig(section, key):
     config.read(configpath,'utf-8')
     return config.get(section, key)
 #上传
-def UploadFile(file):
-    VP = VideoPart(path+'/'+file,file[5:11],file[5:11]+'录像')
-    if file == 'file'+type:
-        print('dupe file')
-        #我也不知道为啥会重复上传,打个特判
-    else:
-        b = Bilibili()
-        b.login(username, password)
-        PartTitle = title + file[5:13]# time.strftime("%m-%d-%H", time.localtime())
-        logging.info("login successful, begin uploading"+PartTitle)
-        print("login successful, begin uploading"+PartTitle)
-        b.upload(VP, PartTitle, tid, tag, desc, dynamtic)
-        logging.info("finish uploading "+PartTitle)
-        print("finish uploading "+PartTitle)
+def UploadFile(VPlist):
+    uploader.upload(parts=VPlist,copyright=1,title=title+time.strftime(" %Y-%m-%d",time.localtime()),tid=tid,tag=tag,desc=desc,open_elec=1,max_retry=5)
+
+def RemoveExtra(files):
+    RecordedSize = 0
+    for tfile in files:
+        if tfile.endswith(type):
+            os.path.getsize(path+'/'+tfile)
 
 
 VideoPartList = []
+UploadingFile = []
+LastUploadDate = time.strftime("%d",time.localtime())
 #读取相对路径和录像文件名词
 path = getConfig('Common','path')
 type = getConfig('Common','type')
@@ -43,15 +43,23 @@ username = getConfig('Bilibili','username')
 password = getConfig('Bilibili','password')
 title = getConfig('Bilibili','title')
 tid = int(getConfig('Bilibili','tid'))
-tag = getConfig('Bilibili','tag').split(',')
+tag = getConfig('Bilibili','tag')
 desc = getConfig('Bilibili','desc')
 dynamtic = getConfig('Bilibili','dynamtic')
 #log 读取的数据
 logging.debug("Readed"+"path: "+path+' type: '+type+' room_id: '+str(room_id)+' username: '+username+' password: '+ password +' title: '+title)
 logging.debug("Readed"+"tid: "+str(tid)+' tag: '+str(tag)+' desc: '+desc+' dynamtic: '+dynamtic+' From the config file')
+uploader = BilibiliUploader()
+try:
+    uploader.login(username,password)
+except:
+    logging.debug("Login Failed")
+else:
+    logging.info("Login successful")
 
 #暴力死循环
 while(True):
+    if LastUploadDate == time.strftime("%d",time.localtime()):
         files = os.listdir(path)
         #遍历录像目录
         for file in files:
@@ -63,14 +71,26 @@ while(True):
                 tmpsizeB = os.path.getsize(path+'/'+file)
                 #如果录像体积无变化,开始上传
                 if tmpsizeA == tmpsizeB:
-                    UploadFile(file)
-                    logging.info("delete uploaded file" + file)
-                    print("delete uploaded file" + file)
-                    os.remove(path + '/' + file)
-                    print(os.listdir(path))
+                    VideoPartList.append(VideoPart(
+                        path=path+'/'+file,
+                        title=file,
+                    ))
+                    UploadingFile.append(file)
                 else:
                     print("This video file is writing while streaming, do nothing")
-        time.sleep(200)
+        if len(VideoPartList) > 0:
+            UploadFile(VideoPartList)
+            logging.info("Upload successful, list of Uploaded file:")
+            for file in UploadingFile:
+                logging.info("Uploaded "+file+"delete it")
+               # os.remove(path + '/' + file)
+            VideoPartList = []
+            UploadingFile = []
+        else:
+            print("Nothing can upload today")
+    else:
+        logging.debug("Uploaded Video today")
+    time.sleep(1800)
 
 
 
