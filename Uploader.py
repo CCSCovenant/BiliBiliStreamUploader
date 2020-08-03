@@ -60,6 +60,7 @@ else:
 #暴力死循环
 while(True):
     if LastUploadDate == time.strftime("%d",time.localtime()):
+        LastUploadDate = time.strftime("%d",time.localtime())
         files = os.listdir(path)
         #遍历录像目录
         for file in files:
@@ -83,7 +84,7 @@ while(True):
             logging.info("Upload successful, list of Uploaded file:")
             for file in UploadingFile:
                 logging.info("Uploaded "+file+"delete it")
-               # os.remove(path + '/' + file)
+                os.remove(path + '/' + file)
             VideoPartList = []
             UploadingFile = []
         else:
