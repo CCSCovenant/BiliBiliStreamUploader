@@ -59,8 +59,8 @@ else:
 
 #暴力死循环
 while(True):
-    if LastUploadDate == time.strftime("%d",time.localtime()):
-        LastUploadDate = time.strftime("%d",time.localtime())
+    if LastUploadDate != time.strftime("%d",time.localtime()):
+        print(" try uploading Stream"+LastUploadDate)
         files = os.listdir(path)
         #遍历录像目录
         for file in files:
@@ -81,7 +81,8 @@ while(True):
                     print("This video file is writing while streaming, do nothing")
         if len(VideoPartList) > 0:
             UploadFile(VideoPartList)
-            logging.info("Upload successful, list of Uploaded file:")
+            logging.info("Upload "+LastUploadDate+" steam successful, list of Uploaded file:")
+            LastUploadDate = time.strftime("%d", time.localtime())
             for file in UploadingFile:
                 logging.info("Uploaded "+file+"delete it")
                 os.remove(path + '/' + file)
@@ -90,7 +91,7 @@ while(True):
         else:
             print("Nothing can upload today")
     else:
-        logging.debug("Uploaded Video today")
+        print("Uploaded Video today")
     time.sleep(1800)
 
 
