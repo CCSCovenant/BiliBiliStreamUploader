@@ -22,13 +22,9 @@ def getConfig(section, key):
 #上传
 def UploadFile(VPlist):
     uploader.upload(parts=VPlist,copyright=1,title=title+time.strftime(" %Y-%m-%d",time.localtime()),tid=tid,tag=tag,desc=desc,open_elec=1,max_retry=20)
+#修改分P
 def AppendFile(VPlist):
     uploader.edit(bvid=BV,parts=VPlist,max_retry=20)
-def RemoveExtra(files):
-    RecordedSize = 0
-    for tfile in files:
-        if tfile.endswith(type):
-            os.path.getsize(path+'/'+tfile)
 
 
 VideoPartList = []
@@ -61,8 +57,8 @@ else:
 
 #暴力死循环
 while(True):
-    print("Today:"+time.strftime("%d",time.localtime())+" Last Day:" + LastUploadDate)
     if LastUploadDate != time.strftime("%d",time.localtime()):
+        print("创建新分P尝试")
         #判断今天是否创建过分P
         files = os.listdir(path)
         #遍历录像目录
@@ -80,10 +76,8 @@ while(True):
                         title=file,
                     ))
                     UploadingFile.append(file)
-                else:
-                    print("This video file is writing while streaming, do nothing")
         if len(VideoPartList) > 0:
-            print(" Creative New P for Today:" + LastUploadDate)
+            print("创建新分P中")
             BV = UploadFile(VideoPartList)
             # 更新今天分P的BV状态
             LastUploadDate = time.strftime("%d", time.localtime())
@@ -91,12 +85,12 @@ while(True):
             logging.info("Upload "+LastUploadDate+" steam successful, list of Uploaded file:")
             for file in UploadingFile:
                 logging.info("Uploaded "+file+"delete it")
+                # 移除额外文件
                 os.remove(path + '/' + file)
             VideoPartList = []
             UploadingFile = []
-        else:
-            print("Nothing can upload")
     else:
+        print("合并已有分P尝试")
         files = os.listdir(path)
         # 遍历录像目录
         for file in files:
@@ -113,20 +107,17 @@ while(True):
                         title=file,
                     ))
                     UploadingFile.append(file)
-                else:
-                    print("This video file is writing while streaming, do nothing")
         if len(VideoPartList) > 0:
             #如果有可以上传的内容
-            print("append Stream for today:" + LastUploadDate)
+            print("合并已有分P中")
             AppendFile(VideoPartList)
             logging.info("Upload " + LastUploadDate + " steam successful, list of Uploaded file:")
             for file in UploadingFile:
+                # 移除额外文件
                 logging.info("Uploaded " + file + "delete it")
                 os.remove(path + '/' + file)
             VideoPartList = []
             UploadingFile = []
-        else:
-            print("Nothing can upload")
     time.sleep(60)
 
 
