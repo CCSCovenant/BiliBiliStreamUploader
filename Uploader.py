@@ -21,8 +21,9 @@ def getConfig(section, key):
     return config.get(section, key)
 #上传
 def UploadFile(VPlist):
-    uploader.upload(parts=VPlist,copyright=1,title=title+time.strftime(" %Y-%m-%d",time.localtime()),tid=tid,tag=tag,desc=desc,open_elec=1,max_retry=5)
-
+    uploader.upload(parts=VPlist,copyright=1,title=title+time.strftime(" %Y-%m-%d",time.localtime()),tid=tid,tag=tag,desc=desc,open_elec=1,max_retry=20)
+def AppendFile(VPlist):
+    uploader.edit(bvid=BV,parts=VPlist,max_retry=20)
 def RemoveExtra(files):
     RecordedSize = 0
     for tfile in files:
@@ -32,7 +33,8 @@ def RemoveExtra(files):
 
 VideoPartList = []
 UploadingFile = []
-LastUploadDate = time.strftime("%d",time.localtime())
+LastUploadDate = -1;
+BV = 0;
 #读取相对路径和录像文件名词
 path = getConfig('Common','path')
 type = getConfig('Common','type')
@@ -59,8 +61,9 @@ else:
 
 #暴力死循环
 while(True):
+    print("Today:"+time.strftime("%d",time.localtime())+" Last Day:" + LastUploadDate)
     if LastUploadDate != time.strftime("%d",time.localtime()):
-        print(" try uploading Stream"+LastUploadDate)
+        #判断今天是否创建过分P
         files = os.listdir(path)
         #遍历录像目录
         for file in files:
@@ -80,19 +83,51 @@ while(True):
                 else:
                     print("This video file is writing while streaming, do nothing")
         if len(VideoPartList) > 0:
-            UploadFile(VideoPartList)
-            logging.info("Upload "+LastUploadDate+" steam successful, list of Uploaded file:")
+            print(" Creative New P for Today:" + LastUploadDate)
+            BV = UploadFile(VideoPartList)
+            # 更新今天分P的BV状态
             LastUploadDate = time.strftime("%d", time.localtime())
+            # 更新今天的上传状态
+            logging.info("Upload "+LastUploadDate+" steam successful, list of Uploaded file:")
             for file in UploadingFile:
                 logging.info("Uploaded "+file+"delete it")
                 os.remove(path + '/' + file)
             VideoPartList = []
             UploadingFile = []
         else:
-            print("Nothing can upload today")
+            print("Nothing can upload")
     else:
-        print("Uploaded Video today")
-    time.sleep(1800)
+        files = os.listdir(path)
+        # 遍历录像目录
+        for file in files:
+            # 寻找指定类型的录像文件
+            if file.endswith(type):
+                # 检测录像文件体积编号
+                tmpsizeA = os.path.getsize(path + '/' + file)
+                time.sleep(10)
+                tmpsizeB = os.path.getsize(path + '/' + file)
+                # 如果录像体积无变化,开始上传
+                if tmpsizeA == tmpsizeB:
+                    VideoPartList.append(VideoPart(
+                        path=path + '/' + file,
+                        title=file,
+                    ))
+                    UploadingFile.append(file)
+                else:
+                    print("This video file is writing while streaming, do nothing")
+        if len(VideoPartList) > 0:
+            #如果有可以上传的内容
+            print("append Stream for today:" + LastUploadDate)
+            AppendFile(VideoPartList)
+            logging.info("Upload " + LastUploadDate + " steam successful, list of Uploaded file:")
+            for file in UploadingFile:
+                logging.info("Uploaded " + file + "delete it")
+                os.remove(path + '/' + file)
+            VideoPartList = []
+            UploadingFile = []
+        else:
+            print("Nothing can upload")
+    time.sleep(60)
 
 
 
