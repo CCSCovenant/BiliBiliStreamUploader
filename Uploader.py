@@ -21,7 +21,8 @@ def getConfig(section, key):
     return config.get(section, key)
 #上传
 def UploadFile(VPlist):
-    uploader.upload(parts=VPlist,copyright=1,title=title+time.strftime(" %Y-%m-%d",time.localtime()),tid=tid,tag=tag,desc=desc,open_elec=1,max_retry=20)
+    la, lb = uploader.upload(parts=VPlist,copyright=1,title=title+time.strftime(" %Y-%m-%d",time.localtime()),tid=tid,tag=tag,desc=desc,open_elec=1,max_retry=20)
+    return la,lb
 #修改分P
 def AppendFile(VPlist):
     uploader.edit(bvid=BV,parts=VPlist,max_retry=20)
@@ -79,7 +80,7 @@ while(True):
                     UploadingFile.append(file)
         if len(VideoPartList) > 0:
             print("创建新分P中")
-            AV,BV = UploadFile(VideoPartList)
+            AV, BV = UploadFile(VideoPartList)
             # 更新今天分P的BV状态
             LastUploadDate = time.strftime("%d", time.localtime())
             # 更新今天的上传状态
