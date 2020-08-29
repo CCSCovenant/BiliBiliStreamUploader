@@ -31,6 +31,7 @@ VideoPartList = []
 UploadingFile = []
 LastUploadDate = -1;
 BV = 0;
+AV = 0;
 #读取相对路径和录像文件名词
 path = getConfig('Common','path')
 type = getConfig('Common','type')
@@ -78,7 +79,7 @@ while(True):
                     UploadingFile.append(file)
         if len(VideoPartList) > 0:
             print("创建新分P中")
-            BV = UploadFile(VideoPartList)
+            AV,BV = UploadFile(VideoPartList)
             # 更新今天分P的BV状态
             LastUploadDate = time.strftime("%d", time.localtime())
             # 更新今天的上传状态
